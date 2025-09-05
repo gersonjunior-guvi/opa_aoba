@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Gerenciamento de Produtos - Protótipo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+        }
+
+        .streamlit-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            min-height: 100vh;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 250px;
+            height: 100vh;
+            background: #f0f2f6;
+            padding: 20px;
+            border-right: 1px solid #e1e5e9;
+            overflow-y: auto;
+        }
+
+        .main-content {
+            margin-left: 250px;
+            padding: 20px;
+        }
+
+        .main-header {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #1f77b4;
+            text-align: center;
+            margin-bottom: 2rem;
+            padding: 20px 0;
+            border-bottom: 2px solid #e1e5e9;
+        }
+
+        .sidebar h3 {
+            color: #1f77b4;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .form-group select {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            background: white;
+            font-size: 14px;
+        }
+
+        .metrics {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .metric-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .metric-value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .metric-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .content-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 30px;
+            margin-top: 20px;
+        }
+
+        .table-section {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .section-header {
+            background: linear-gradient(135deg, #1f77b4 0%, #4dabf7 100%);
+            color: white;
+            padding: 15px 20px;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+
+        th {
+            background: #f8f9fa;
+            padding: 12px 8px;
+            text-align: left;
+            font-weight: 600;
+            color: #495057;
+            border-bottom: 2px solid #dee2e6;
+            position: sticky;
+            top: 0;
+        }
+
+        td {
+            padding: 10px 8px;
+            border-bottom: 1px solid #dee2e6;
+            vertical-align: middle;
+        }
+
+        tr:hover {
+            background: #f8f9fa;
+        }
+
+        .status-active {
+            background: #d4edda;
+            color: #155724;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .status-inactive {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .edit-section {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            height: fit-content;
+        }
+
+        .edit-content {
+            padding: 20px;
+        }
+
+        .product-selector {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            background: white;
+        }
+
+        .selected-product {
+            background: linear-gradient(135deg, #17a2b8 0%, #20c997 100%);
+            color: white;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .form-section {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .form-section h4 {
+            color: #495057;
+            margin-bottom: 15px;
+            font-size: 0.95rem;
+        }
+
+        .input-group {
+            margin-bottom: 12px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 4px;
+            font-size: 0.9rem;
+            color: #495057;
+            font-weight: 500;
+        }
+
+        .input-group input, .input-group select {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #ced4da;
+            border-radius: 6px;
+            font-size: 14px;
+            background: white;
+        }
+
+        .save-btn {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .save-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+        }
+
+        .info-expandable {
+            background: #e3f2fd;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+            border-left: 4px solid #2196f3;
+        }
+
+        .info-header {
+            font-weight: 600;
+            color: #1565c0;
+            margin-bottom: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .info-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 10px;
+        }
+
+        .info-list {
+            list-style: none;
+        }
+
+        .info-list li {
+            padding: 3px 0;
+            color: #1565c0;
+            font-size: 0.9rem;
+        }
+
+        .footer {
+            text-align: center;
+            color: #6c757d;
+            font-size: 0.9rem;
+            margin-top: 30px;
+            padding: 20px;
+            border-top: 1px solid #dee2e6;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            .main-content {
+                margin-left: 0;
+            }
+            .metrics {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .content-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="streamlit-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <h3>🔍 Filtros</h3>
+            
+            <div class="form-group">
+                <label>Categoria:</label>
+                <select>
+                    <option>Todos</option>
+                    <option>Eletrônicos</option>
+                    <option>Informática</option>
+                    <option>Periféricos</option>
+                    <option>Monitores</option>
+                    <option>Áudio</option>
+                    <option>Armazenamento</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Status:</label>
+                <select>
+                    <option>Todos</option>
+                    <option>Ativo</option>
+                    <option>Inativo</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Header -->
+            <div class="main-header">
+                📦 Sistema de Gerenciamento de Produtos
+            </div>
+
+            <!-- Metrics Cards -->
+            <div class="metrics">
+                <div class="metric-card">
+                    <div class="metric-value">8</div>
+                    <div class="metric-label">Total de Produtos</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value">R$ 14.044,26</div>
+                    <div class="metric-label">Valor Total</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value">693</div>
+                    <div class="metric-label">Estoque Total</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value">7</div>
+                    <div class="metric-label">Produtos Ativos</div>
+                </div>
+            </div>
+
+            <!-- Content Grid -->
+            <div class="content-grid">
+                <!-- Table Section -->
+                <div class="table-section">
+                    <div class="section-header">📋 Tabela de Produtos</div>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Produto</th>
+                                    <th>Categoria</th>
+                                    <th>Preço</th>
+                                    <th>Estoque</th>
+                                    <th>Status</th>
+                                    <th>Fornecedor</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>1</td>
+                                    <td>Smartphone Galaxy S24</td>
+                                    <td>Eletrônicos</td>
+                                    <td>R$ 2.899,99</td>
+                                    <td>45</td>
+                                    <td><span class="status-active">Ativo</span></td>
+                                    <td>Samsung</td>
+                                </tr>
+                                <tr>
+                                    <td>2</td>
+                                    <td>Notebook Dell Inspiron</td>
+                                    <td>Informática</td>
+                                    <td>R$ 3.299,50</td>
+                                    <td>23</td>
+                                    <td><span class="status-active">Ativo</span></td>
+                                    <td>Dell</td>
+                                </tr>
+                                <tr>
+                                    <td>3</td>
+                                    <td>Mouse Gamer Logitech</td>
+                                    <td>Periféricos</td>
+                                    <td>R$ 189,90</td>
+                                    <td>156</td>
+                                    <td><span class="status-active">Ativo</span></td>
+                                    <td>Logitech</td>
+                                </tr>
+                                <tr>
+                                    <td>4</td>
+                                    <td>Teclado Mecânico RGB</td>
+                                    <td>Periféricos</td>
+                                    <td>R$ 459,99</td>
+                                    <td>78</td>
+                                    <td><span class="status-inactive">Inativo</span></td>
+                                    <td>Corsair</td>
+                                </tr>
+                                <tr>
+                                    <td>5</td>
+                                    <td>Monitor 27" 4K</td>
+                                    <td>Monitores</td>
+                                    <td>R$ 1.899,00</td>
+                                    <td>12</td>
+                                    <td><span class="status-active">Ativo</span></td>
+                                    <td>LG</td>
+                                </tr>
+                                <tr>
+                                    <td>6</td>
+                                    <td>Headset Wireless</td>
+                                    <td>Áudio</td>
+                                    <td>R$ 299,99</td>
+                                    <td>67</td>
+                                    <td><span class="status-active">Ativo</span></td>
+                                    <td>Sony</td>
+                                </tr>
+                                <tr>
+                                    <td>7</td>
+                                    <td>Webcam Full HD</td>
+                                    <td>Periféricos</td>
+                                    <td>R$ 249,90</td>
+                                    <td>89</td>
+                                    <td><span class="status-active">Ativo</span></td>
+                                    <td>Logitech</td>
+                                </tr>
+                                <tr>
+                                    <td>8</td>
+                                    <td>SSD 1TB NVMe</td>
+                                    <td>Armazenamento</td>
+                                    <td>R$ 399,99</td>
+                                    <td>134</td>
+                                    <td><span class="status-active">Ativo</span></td>
+                                    <td>Kingston</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Edit Section -->
+                <div class="edit-section">
+                    <div class="section-header">✏️ Editar Produto</div>
+                    <div class="edit-content">
+                        <select class="product-selector">
+                            <option>Selecione um produto para editar:</option>
+                            <option selected>Smartphone Galaxy S24</option>
+                            <option>Notebook Dell Inspiron</option>
+                            <option>Mouse Gamer Logitech</option>
+                            <option>Teclado Mecânico RGB</option>
+                            <option>Monitor 27" 4K</option>
+                            <option>Headset Wireless</option>
+                            <option>Webcam Full HD</option>
+                            <option>SSD 1TB NVMe</option>
+                        </select>
+
+                        <div class="selected-product">
+                            📦 Smartphone Galaxy S24
+                        </div>
+
+                        <div class="form-section">
+                            <h4>Campos Editáveis:</h4>
+                            
+                            <div class="input-group">
+                                <label>Preço (R$):</label>
+                                <input type="number" value="2899.99" step="0.01" min="0.01">
+                            </div>
+
+                            <div class="input-group">
+                                <label>Estoque:</label>
+                                <input type="number" value="45" step="1" min="0">
+                            </div>
+
+                            <div class="input-group">
+                                <label>Status:</label>
+                                <select>
+                                    <option selected>Ativo</option>
+                                    <option>Inativo</option>
+                                </select>
+                            </div>
+
+                            <div class="input-group">
+                                <label>Categoria:</label>
+                                <select>
+                                    <option selected>Eletrônicos</option>
+                                    <option>Informática</option>
+                                    <option>Periféricos</option>
+                                    <option>Monitores</option>
+                                    <option>Áudio</option>
+                                    <option>Armazenamento</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <button class="save-btn">💾 Salvar Alterações</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Info Section -->
+            <div class="info-expandable">
+                <div class="info-header">ℹ️ Informações do Sistema</div>
+                <div class="info-content">
+                    <div>
+                        <h4 style="margin-bottom: 10px; color: #1565c0;">Funcionalidades Disponíveis:</h4>
+                        <ul class="info-list">
+                            <li>• Visualização completa da tabela de produtos</li>
+                            <li>• Filtros por categoria e status</li>
+                            <li>• Métricas em tempo real</li>
+                            <li>• Edição de campos específicos</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 style="margin-bottom: 10px; color: #1565c0;">Campos Editáveis:</h4>
+                        <ul class="info-list">
+                            <li>• Preço do produto</li>
+                            <li>• Quantidade em estoque</li>
+                            <li>• Status (Ativo/Inativo)</li>
+                            <li>• Categoria do produto</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="footer">
+                📊 Protótipo desenvolvido para demonstração • Última atualização: 05/09/2025 14:30
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Simulate interactive behavior
+        document.querySelector('.product-selector').addEventListener('change', function(e) {
+            const selectedProduct = e.target.value;
+            if (selectedProduct !== 'Selecione um produto para editar:') {
+                document.querySelector('.selected-product').textContent = '📦 ' + selectedProduct;
+                
+                // Simulate loading different product data
+                const productData = {
+                    'Smartphone Galaxy S24': { price: 2899.99, stock: 45, status: 'Ativo', category: 'Eletrônicos' },
+                    'Notebook Dell Inspiron': { price: 3299.50, stock: 23, status: 'Ativo', category: 'Informática' },
+                    'Mouse Gamer Logitech': { price: 189.90, stock: 156, status: 'Ativo', category: 'Periféricos' },
+                    'Teclado Mecânico RGB': { price: 459.99, stock: 78, status: 'Inativo', category: 'Periféricos' }
+                };
+                
+                if (productData[selectedProduct]) {
+                    const data = productData[selectedProduct];
+                    document.querySelector('input[type="number"][step="0.01"]').value = data.price;
+                    document.querySelector('input[type="number"][step="1"]').value = data.stock;
+                    
+                    const statusSelect = document.querySelectorAll('.input-group select')[0];
+                    statusSelect.value = data.status;
+                    
+                    const categorySelect = document.querySelectorAll('.input-group select')[1];
+                    categorySelect.value = data.category;
+                }
+            }
+        });
+
+        // Save button animation
+        document.querySelector('.save-btn').addEventListener('click', function() {
+            this.textContent = '✅ Salvando...';
+            this.style.background = 'linear-gradient(135deg, #20c997 0%, #17a2b8 100%)';
+            
+            setTimeout(() => {
+                this.textContent = '✅ Salvo com sucesso!';
+                setTimeout(() => {
+                    this.textContent = '💾 Salvar Alterações';
+                    this.style.background = 'linear-gradient(135deg, #28a745 0%, #20c997 100%)';
+                }, 2000);
+            }, 1000);
+        });
+
+        // Table row hover effect enhancement
+        document.querySelectorAll('tr').forEach(row => {
+            row.addEventListener('click', function() {
+                document.querySelectorAll('tr').forEach(r => r.style.background = '');
+                this.style.background = '#e3f2fd';
+            });
+        });
+    </script>
+</body>
+</html>
